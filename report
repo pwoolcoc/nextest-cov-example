@@ -1,0 +1,13 @@
+#!/bin/bash
+
+llvm-profdata merge -sparse nextest-cov-*.profraw -o nextest-cov.profdata
+
+OBJECTS=""
+
+for file in $(ls target/debug/deps/ | grep -E "^nextest_cov-[0-9a-z]+$") ; do
+    OBJECTS="${OBJECTS} --object target/debug/deps/${file}"
+done
+
+llvm-cov report --use-color --ignore-filename-regex="cargo/registry" --instr-profile=nextest-cov.profdata $OBJECTS
+
+llvm-cov show --use-color --ignore-filename-regex="cargo/registry" --instr-profile=nextest-cov.profdata --show-instantiations --show-line-counts-or-regions --Xdemangler=rustfilt $OBJECTS
